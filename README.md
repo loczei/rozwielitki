@@ -1,2 +1,2 @@
-![image] (Daphnia2.png)
-![image] (Daphnia1.png)
+![Scene](Daphnia2.png)
+![Scene with beams](Daphnia1.png)
