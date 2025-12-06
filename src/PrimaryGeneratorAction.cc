@@ -28,10 +28,11 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction() { delete fParticleGun; }
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *event) {
 
   G4double meanEnergy = 1500.0 * keV;
-  // energia jest losowana zgodnie z rozkladem gausa
-  G4double energy = CLHEP::RandGauss::shoot(meanEnergy, 1 * keV);
+  // energia jest losowana zgodnie z rozkladem gausa defaultowo, w taki sposob
+  // jak w linijce pod spodem
+  // G4double energy = CLHEP::RandGauss::shoot(meanEnergy, 1 * keV);
 
-  fParticleGun->SetParticleEnergy(energy);
+  fParticleGun->SetParticleEnergy(meanEnergy);
 
   // ustawinie pozycji generatora
   G4double xPos{(G4UniformRand() - 0.5) * 8};
