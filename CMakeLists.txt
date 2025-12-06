@@ -7,7 +7,7 @@ project(B1)
 #---------------------------------------------------------------------------
 #Options
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
