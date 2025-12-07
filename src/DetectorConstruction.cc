@@ -18,7 +18,7 @@
 #include <format>
 
 
-void createDaphnia(
+void DetectorConstruction::createDaphnia(
     const char* name,
     G4ThreeVector* pos,
     G4LogicalVolume* motherVolume,
@@ -43,7 +43,10 @@ void createDaphnia(
                       motherVolume,     // its mother  volume
                       false,          // no boolean operation
                       0,              // copy number
-                      checkOverlaps); // overlaps checking
+                      checkOverlaps); // overlaps
+
+    // add Daphnia to detection
+    this->fScoringVolumes.push_back(logicDaphnia);
 }
 
 // Cell sizes
@@ -61,15 +64,17 @@ constexpr G4double shapeInnerdya = shapeOuterdya - wallThickness * 2;
 constexpr G4double shapeInnerdyb = shapeOuterdyb - wallThickness * 2;
 constexpr G4double shapeInnerdz = shapeOuterdz - baseThickness;
 
-void createCell(
+void DetectorConstruction::createCellWithDaphnia(
     const char* name,
     G4ThreeVector* pos,
     G4LogicalVolume* motherVolume,
     G4Material* cellMat,
     G4Material* cellMatInside,
+    G4Material* daphniaMat,
     G4bool checkOverlaps = true,
     G4VisAttributes* visAttrInner = nullptr,
-    G4VisAttributes* visAttrOuter = nullptr
+    G4VisAttributes* visAttrOuter = nullptr,
+    G4VisAttributes* visAttrDaphnia = nullptr
 ) {
     // Cell shapes, logical volumes, physical volumes
 
@@ -120,6 +125,9 @@ void createCell(
                       false,
                       0,
                       checkOverlaps);
+
+    auto daphniaPos = G4ThreeVector();
+    this->createDaphnia(std::format("Daphnia{}", name).c_str(), &daphniaPos, logicCellInner1, daphniaMat, checkOverlaps, visAttrDaphnia);
 }
 
 G4VPhysicalVolume *DetectorConstruction::Construct() {
@@ -168,41 +176,37 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   };
 
-  //
-  //
-  // Daphnia
-  //
-  //
-  // properities of a daphnia
-  G4Material *daphniaMat = nist->FindOrBuildMaterial("G4_WATER");
-
-  auto visAttributesDaphnia =
-      new G4VisAttributes(G4Colour(1.0, 0.0, 0.5, 1.0)); // pink
-  visAttributesDaphnia->SetVisibility(true);
-
-  for (int i = 0; i < cPos.size(); i++) {
-      createDaphnia(std::format("Daphnia{}", i).c_str(), &cPos.at(i), logicWorld, daphniaMat, checkOverlaps, visAttributesDaphnia);
-  }
-
-  //
-  //
   // Cells
-  //
-  //
-  // properities of a cell
   G4Material *cellMat = nist->FindOrBuildMaterial("G4_A-150_TISSUE");
   G4Material *cellMatInside = nist->FindOrBuildMaterial("G4_WATER");
 
+  // Daphnia
+  G4Material *daphniaMat = nist->FindOrBuildMaterial("G4_WATER");
+  auto visAttributesDaphnia =
+  new G4VisAttributes(G4Colour(1.0, 0.0, 0.5, 1.0)); // pink
+  visAttributesDaphnia->SetVisibility(true);
+
   auto visAttributesInner =
-      new G4VisAttributes(G4Colour(0.0, 0.0, 1.0, 0.2)); // blue
+  new G4VisAttributes(G4Colour(0.0, 0.0, 1.0, 0.2)); // blue
   visAttributesInner->SetVisibility(true);
 
   auto visAttributesOuter =
-      new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.7)); // white
+  new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.7)); // white
   visAttributesOuter->SetVisibility(true);
 
   for (int i = 0; i < cPos.size(); i++) {
-      createCell(std::format("TRD{}", i).c_str(), &cPos.at(i), logicWorld, cellMat, cellMatInside, checkOverlaps, visAttributesInner, visAttributesOuter);
+      createCellWithDaphnia(
+          std::format("TRD{}", i).c_str(),
+                            &cPos.at(i),
+                            logicWorld,
+                            cellMat,
+                            cellMatInside,
+                            daphniaMat,
+                            checkOverlaps,
+                            visAttributesInner,
+                            visAttributesOuter,
+                            visAttributesDaphnia
+                            );
   }
 
   //
